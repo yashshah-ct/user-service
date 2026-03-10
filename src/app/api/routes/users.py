@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.rate_limit import check_rate_limit_auth
 from app.db.session import get_db
 from app.schemas.user import UserCreate, UserResponse, UserUpdate
 from app.services.user_service import create_user, get_user_by_id, update_user
@@ -8,10 +9,16 @@ from app.messaging.rabbitmq import publish_user_created, get_connection, ensure_
 router = APIRouter(prefix="/users", tags=["users"])
 
 
+async def _rate_limit_auth(request: Request) -> None:
+    check_rate_limit_auth(request)
+
+
 @router.post("", response_model=UserResponse)
 async def register_user(
+    request: Request,
     data: UserCreate,
     db: AsyncSession = Depends(get_db),
+    _: None = Depends(_rate_limit_auth),
 ):
     from app.services.user_service import get_user_by_email
     existing = await get_user_by_email(db, data.email)
@@ -31,7 +38,6 @@ async def register_user(
         full_name=user.full_name,
         created_at=user.created_at.isoformat(),
         updated_at=user.updated_at.isoformat(),
-        password_hash=user.password_hash,
     )
 
 
@@ -49,7 +55,6 @@ async def get_user(
         full_name=user.full_name,
         created_at=user.created_at.isoformat(),
         updated_at=user.updated_at.isoformat(),
-        password_hash=user.password_hash,
     )
 
 

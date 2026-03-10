@@ -2,8 +2,9 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    database_url: str = "postgresql+asyncpg://user:password@localhost:5432/userdb"
-    rabbitmq_url: str = "amqp://guest:guest@localhost:5672/"
+    # Set via env in production; no hardcoded credentials
+    database_url: str = "postgresql+asyncpg://localhost:5432/userdb"
+    rabbitmq_url: str = "amqp://localhost:5672/"
     jwt_private_key_path: str = "./keys/private.pem"
     jwt_public_key_path: str = "./keys/public.pem"
     jwt_algorithm: str = "RS256"

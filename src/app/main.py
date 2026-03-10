@@ -8,6 +8,7 @@ from prometheus_client import Counter, Histogram
 from app.core.config import settings
 from app.core.logging_config import setup_logging
 from app.core.middleware import CorrelationIdMiddleware
+from app.core.security_headers import SecurityHeadersMiddleware
 from app.api.routes import users, auth, health
 
 setup_logging(settings.log_level)
@@ -24,6 +25,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="User Service", version="1.0.0", lifespan=lifespan)
 app.add_middleware(CorrelationIdMiddleware)
+app.add_middleware(SecurityHeadersMiddleware)
 
 app.include_router(users.router)
 app.include_router(auth.router)

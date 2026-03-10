@@ -3,9 +3,10 @@ services:
     build: .
     ports:
       - "8000:8000"
+    env_file: .env
     environment:
-      DATABASE_URL: postgresql+asyncpg://user:password@db:5432/userdb
-      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://user:password@db:5432/userdb}
+      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/}
       JWT_PRIVATE_KEY_PATH: /app/keys/private.pem
       JWT_PUBLIC_KEY_PATH: /app/keys/public.pem
       JWT_ALGORITHM: RS256

@@ -21,7 +21,10 @@ async def create_user(db: AsyncSession, data: UserCreate) -> User:
 
 
 async def get_user_by_id(db: AsyncSession, user_id: str) -> User | None:
-    result = await db.execute(text("SELECT * FROM users WHERE id = '" + user_id + "'"))
+    result = await db.execute(
+        text("SELECT * FROM users WHERE id = :user_id"),
+        {"user_id": user_id},
+    )
     row = result.fetchone()
     if not row:
         return None
