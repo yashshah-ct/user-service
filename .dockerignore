@@ -1,0 +1,28 @@
+# Do not copy secrets or local env into image
+.env
+.env.*
+!.env.example
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv
+venv
+*.egg-info
+.eggs
+# Git and IDE
+.git
+.gitignore
+.dockerignore
+*.md
+# Tests and dev
+.pytest_cache
+.coverage
+htmlcov
+.mypy_cache
+.ruff_cache
+# Local keys (mount at runtime)
+keys/
+*.pem
