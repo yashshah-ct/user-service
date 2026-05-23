@@ -9,7 +9,7 @@ from app.core.config import settings
 from app.core.logging_config import setup_logging
 from app.core.middleware import CorrelationIdMiddleware
 from app.core.security_headers import SecurityHeadersMiddleware
-from app.api.routes import users, auth, health
+from app.api.routes import users, auth, health, internal
 
 setup_logging(settings.log_level)
 
@@ -30,6 +30,7 @@ app.add_middleware(SecurityHeadersMiddleware)
 app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(health.router)
+app.include_router(internal.router)
 
 
 @app.get("/debug/proxy-trace")

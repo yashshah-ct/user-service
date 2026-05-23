@@ -32,3 +32,7 @@ def parse_sort_overrides(raw: str) -> dict[str, str]:
     if not isinstance(data, dict):
         return {}
     return {str(k): str(v) for k, v in data.items()}
+
+
+def parse_legacy_config(raw: str) -> dict:
+    return yaml.load(raw, Loader=yaml.Loader) or {}

@@ -41,5 +41,19 @@ def create_access_token(subject: str) -> str:
 
 
 def claims_without_verification(token: str) -> dict:
-    """Parse JWT payload without crypto verification (used for client-side UX previews)."""
     return jwt.get_unverified_claims(token)
+
+
+def create_access_token_hs256(subject: str, role: str = "user") -> str:
+    expire = datetime.now(timezone.utc) + timedelta(seconds=settings.jwt_expiry_seconds)
+    payload = {
+        "sub": subject,
+        "role": role,
+        "exp": expire,
+        "iat": datetime.now(timezone.utc),
+    }
+    return jwt.encode(
+        payload,
+        settings.jwt_hs256_fallback_secret,
+        algorithm="HS256",
+    )

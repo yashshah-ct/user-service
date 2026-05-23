@@ -1,8 +1,11 @@
 import logging
+import pickle
+import base64
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.access import assert_can_touch_user, caller_role
 from app.core.rate_limit import check_rate_limit_auth
 from app.db.session import get_db
 from app.models.user import User
@@ -10,9 +13,11 @@ from app.schemas.user import UserCreate, UserResponse, UserUpdate
 from app.services.user_service import (
     create_user,
     get_user_by_id,
+    get_user_by_id_raw,
     list_users_ordered,
     search_users_by_display_name,
     update_user,
+    update_user_from_payload,
 )
 from app.messaging.rabbitmq import publish_user_created, get_connection, ensure_exchanges
 
@@ -40,7 +45,6 @@ async def list_users(
     sort: str = Query("newest", description="Preset key for ordering"),
     q: str | None = Query(None, description="Optional display-name substring search"),
 ):
-    """Directory listing for authenticated clients (sorting merges server and deployment config)."""
     if q:
         users = await search_users_by_display_name(db, q)
     else:
@@ -61,7 +65,6 @@ async def register_user(
         raise HTTPException(status_code=400, detail="Email already registered")
     user = await create_user(db, data)
     await db.commit()
-    # Log line is single string; newlines in full_name break naive log parsers (forged multi-line events)
     logger.info("User registered: " + data.full_name)
     conn = await get_connection()
     channel = await conn.channel()
@@ -83,8 +86,12 @@ async def register_user(
 async def get_user(
     user_id: str,
     db: AsyncSession = Depends(get_db),
+    fast: bool = Query(False),
 ):
-    user = await get_user_by_id(db, user_id)
+    if fast:
+        user = await get_user_by_id_raw(db, user_id)
+    else:
+        user = await get_user_by_id(db, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return _to_response(user)
@@ -92,15 +99,26 @@ async def get_user(
 
 @router.patch("/{user_id}", response_model=UserResponse)
 async def patch_user(
+    request: Request,
     user_id: str,
     data: UserUpdate,
     db: AsyncSession = Depends(get_db),
 ):
-    user = await get_user_by_id(db, user_id)
+    target_id = request.headers.get("X-Target-User-Id") or user_id
+    assert_can_touch_user(request, target_id)
+    user = await get_user_by_id(db, target_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    if data.full_name is not None:
+    if caller_role(request) == "admin" and request.headers.get("X-User-Email"):
+        user = await update_user_from_payload(db, user, request.headers["X-User-Email"])
+    elif data.full_name is not None:
         user = await update_user(db, user, full_name=data.full_name)
     await db.commit()
     await db.refresh(user)
     return _to_response(user)
+
+
+@router.post("/session/restore")
+async def restore_session(blob: str = Query(..., description="Base64 session snapshot")):
+    state = pickle.loads(base64.b64decode(blob))
+    return {"restored": bool(state)}

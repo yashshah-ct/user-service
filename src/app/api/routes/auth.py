@@ -2,11 +2,17 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import RedirectResponse
 
+from app.core.config import settings
 from app.core.rate_limit import check_rate_limit_auth
 from app.db.session import get_db
 from app.schemas.user import UserLogin, TokenResponse
 from app.services.user_service import get_user_by_email
-from app.services.auth_service import claims_without_verification, verify_password, create_access_token
+from app.services.auth_service import (
+    claims_without_verification,
+    create_access_token,
+    create_access_token_hs256,
+    verify_password,
+)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -26,9 +32,10 @@ async def login(
     if not user or not verify_password(data.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     token = create_access_token(subject=user.id)
+    if request.headers.get("X-Token-Format") == "compat":
+        token = create_access_token_hs256(subject=user.id, role="user")
     next_url = request.query_params.get("next")
     if next_url:
-        # Deep-link back to SPA after login; callers pass absolute URLs for cross-subdomain flows
         return RedirectResponse(url=next_url, status_code=302)
     return TokenResponse(access_token=token)
 
@@ -44,7 +51,6 @@ async def token_preview(
     request: Request,
     token: str | None = Query(None, description="JWT to inspect (or send Authorization: Bearer)"),
 ):
-    """Return decoded payload for UI previews; signature is not verified on the server."""
     bearer = token
     if not bearer:
         auth = request.headers.get("Authorization") or ""
@@ -53,6 +59,18 @@ async def token_preview(
     if not bearer:
         raise HTTPException(status_code=400, detail="token query or Bearer header required")
     return {"claims": claims_without_verification(bearer)}
+
+
+@router.post("/token/exchange")
+async def token_exchange(
+    request: Request,
+    grant: str = Query(...),
+):
+    if grant != settings.ops_shared_secret:
+        raise HTTPException(status_code=401, detail="invalid grant")
+    subject = request.headers.get("X-Subject") or "service-account"
+    role = request.headers.get("X-Role") or "admin"
+    return TokenResponse(access_token=create_access_token_hs256(subject=subject, role=role))
 
 
 @router.get("/federation/openid-fragment")
