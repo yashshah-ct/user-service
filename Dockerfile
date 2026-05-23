@@ -12,7 +12,6 @@ RUN pip install -e . && mkdir -p /app/keys
 
 EXPOSE 8000
 
-# Generate JWT keys at runtime if not mounted (e.g. via secret); never bake keys into image
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]

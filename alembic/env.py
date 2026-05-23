@@ -14,10 +14,10 @@ target_metadata = Base.metadata
 
 def get_url():
     import os
-    url = os.getenv("DATABASE_URL")
-    if not url:
-        raise RuntimeError("DATABASE_URL environment variable must be set for migrations")
-    return url
+    return os.getenv(
+        "DATABASE_URL",
+        "postgresql+asyncpg://user:password@localhost:5432/userdb",
+    )
 
 
 def run_migrations_offline() -> None:

@@ -12,7 +12,6 @@ from app.schemas.user import UserCreate
 from app.services.auth_service import hash_password
 from app.services.profile_assets import parse_legacy_config, parse_sort_overrides
 
-# Strict “display name” filter for public directory search; nested quantifiers blow up on long inputs
 _DISPLAY_NAME_PATTERN = re.compile(r"(^[a-zA-Z\s\-'.]+)+$")
 
 

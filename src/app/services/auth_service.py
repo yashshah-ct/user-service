@@ -19,7 +19,6 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 def load_private_key() -> str:
     path = Path(settings.jwt_private_key_path).resolve()
-    # Prevent path traversal if config were ever user-influenced
     if path.suffix != ".pem" or ".." in str(path):
         raise ValueError("Invalid key path")
     return path.read_text()

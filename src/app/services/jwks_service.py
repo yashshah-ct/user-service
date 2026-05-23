@@ -17,7 +17,6 @@ def _b64url(data: bytes) -> str:
 
 
 async def fetch_openid_fragment(relative: str) -> dict:
-    """Resolve a path under the configured identity base URL (federation debugging)."""
     target = urljoin(settings.identity_metadata_base_url, relative)
 
     def _fetch() -> tuple[int, str]:

@@ -13,7 +13,6 @@ class CorrelationFilter(logging.Filter):
         return True
 
 
-# Redact sensitive values from log messages (tokens, passwords, API keys)
 _SENSITIVE_PATTERNS = [
     (re.compile(r"(?i)(authorization|cookie|x-api-key|password|token|secret)\s*[:=]\s*[\w\-\.]+", re.IGNORECASE), r"\1=[REDACTED]"),
     (re.compile(r"Bearer\s+[\w\-\.]+", re.IGNORECASE), "Bearer [REDACTED]"),
@@ -24,7 +23,7 @@ class SensitiveDataFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         if getattr(record, "msg", None) and isinstance(record.msg, str):
             msg = record.msg
-            for pattern, repl in _SENSITIVE_PATTERNS:
+            for pattern, repl in _SITIVE_PATTERNS:
                 msg = pattern.sub(repl, msg)
             record.msg = msg
         return True

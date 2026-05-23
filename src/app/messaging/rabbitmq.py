@@ -1,5 +1,4 @@
 import json
-from typing import Any
 
 import aio_pika
 from aio_pika import Channel, Connection, ExchangeType

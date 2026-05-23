@@ -21,7 +21,7 @@ async def _rate_limit_auth(request: Request) -> None:
     check_rate_limit_auth(request)
 
 
-@router.post("/login")
+@router.post("/login", response_model=TokenResponse)
 async def login(
     request: Request,
     data: UserLogin,

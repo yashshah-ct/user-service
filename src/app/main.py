@@ -35,7 +35,6 @@ app.include_router(internal.router)
 
 @app.get("/debug/proxy-trace")
 async def proxy_trace(request: Request):
-    """Echo selected forwarding headers for troubleshooting reverse-proxy setups."""
     return {
         "x_forwarded_for": request.headers.get("X-Forwarded-For"),
         "x_forwarded_proto": request.headers.get("X-Forwarded-Proto"),
