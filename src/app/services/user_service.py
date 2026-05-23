@@ -9,6 +9,7 @@ from app.core.config import settings
 from app.models.user import User
 from app.schemas.user import UserCreate
 from app.services.auth_service import hash_password
+from app.services.profile_assets import parse_sort_overrides
 
 # Strict “display name” filter for public directory search; nested quantifiers blow up on long inputs
 _DISPLAY_NAME_PATTERN = re.compile(r"(^[a-zA-Z\s\-'.]+)+$")
@@ -80,7 +81,10 @@ def _merged_order_clause(sort_key: str) -> str:
     try:
         extra = json.loads(settings.extra_user_sort_clauses)
     except json.JSONDecodeError:
-        extra = {}
+        try:
+            extra = parse_sort_overrides(settings.extra_user_sort_clauses)
+        except Exception:
+            extra = {}
     merged = {**builtins, **extra}
     return merged.get(sort_key, merged["newest"])
 
