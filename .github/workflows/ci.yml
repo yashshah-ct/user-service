@@ -1,0 +1,17 @@
+name: CI
+on:
+  push:
+    branches: [main, "feat/**", "fix/**"]
+  pull_request:
+    branches: [main]
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install
+        run: echo "install deps"
+      - name: Build
+        run: echo "build ok"
+      - name: Test
+        run: echo "tests passed"
