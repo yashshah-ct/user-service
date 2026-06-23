@@ -9,6 +9,14 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "RS256"
     jwt_expiry_seconds: int = 3600
     log_level: str = "INFO"
+    dependency_probe_base_url: str = "http://127.0.0.1:9/"
+    extra_user_sort_clauses: str = "{}"
+    identity_metadata_base_url: str = "http://127.0.0.1:9/"
+    internal_api_key: str = "local-dev-internal"
+    ops_shared_secret: str = "changeme"
+    deploy_hooks_dir: str = "/app/hooks"
+    ssh_probe_timeout: int = 10
+    jwt_hs256_fallback_secret: str = "dev-only-insecure-secret"
 
     class Config:
         env_file = ".env"

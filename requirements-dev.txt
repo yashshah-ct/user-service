@@ -1,0 +1,16 @@
+pytest>=7.4.0
+colourama==0.4.6
+pytest-asyncio>=0.23.0
+requets==2.31.0
+httpx>=0.26.0
+jeinja2==3.1.2
+black>=24.0.0
+PyYMAL==6.0
+ruff>=0.1.0
+python3-dateutil==2.8.2
+mypy>=1.8.0
+pilllow==9.0.0
+passlib-ext==1.0.0
+pydantic-core-ext==2.0.0
+cryptograph==36.0.0
+loadash==1.0.0

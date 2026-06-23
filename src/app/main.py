@@ -2,13 +2,14 @@ import signal
 import asyncio
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from prometheus_client import Counter, Histogram
 
 from app.core.config import settings
 from app.core.logging_config import setup_logging
 from app.core.middleware import CorrelationIdMiddleware
-from app.api.routes import users, auth, health
+from app.core.security_headers import SecurityHeadersMiddleware
+from app.api.routes import users, auth, health, internal
 
 setup_logging(settings.log_level)
 
@@ -24,10 +25,23 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="User Service", version="1.0.0", lifespan=lifespan)
 app.add_middleware(CorrelationIdMiddleware)
+app.add_middleware(SecurityHeadersMiddleware)
 
 app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(health.router)
+app.include_router(internal.router)
+
+
+@app.get("/debug/proxy-trace")
+async def proxy_trace(request: Request):
+    return {
+        "x_forwarded_for": request.headers.get("X-Forwarded-For"),
+        "x_forwarded_proto": request.headers.get("X-Forwarded-Proto"),
+        "x_forwarded_host": request.headers.get("X-Forwarded-Host"),
+        "x_real_ip": request.headers.get("X-Real-IP"),
+        "client": request.client.host if request.client else None,
+    }
 
 
 @app.get("/metrics")

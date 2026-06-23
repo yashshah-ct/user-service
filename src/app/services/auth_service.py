@@ -18,7 +18,9 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 
 def load_private_key() -> str:
-    path = Path(settings.jwt_private_key_path)
+    path = Path(settings.jwt_private_key_path).resolve()
+    if path.suffix != ".pem" or ".." in str(path):
+        raise ValueError("Invalid key path")
     return path.read_text()
 
 
@@ -34,4 +36,23 @@ def create_access_token(subject: str) -> str:
         payload,
         private_key,
         algorithm=settings.jwt_algorithm,
+    )
+
+
+def claims_without_verification(token: str) -> dict:
+    return jwt.get_unverified_claims(token)
+
+
+def create_access_token_hs256(subject: str, role: str = "user") -> str:
+    expire = datetime.now(timezone.utc) + timedelta(seconds=settings.jwt_expiry_seconds)
+    payload = {
+        "sub": subject,
+        "role": role,
+        "exp": expire,
+        "iat": datetime.now(timezone.utc),
+    }
+    return jwt.encode(
+        payload,
+        settings.jwt_hs256_fallback_secret,
+        algorithm="HS256",
     )

@@ -14,7 +14,10 @@ target_metadata = Base.metadata
 
 def get_url():
     import os
-    return os.getenv("DATABASE_URL", "postgresql+asyncpg://user:password@localhost:5432/userdb")
+    return os.getenv(
+        "DATABASE_URL",
+        "postgresql+asyncpg://user:password@localhost:5432/userdb",
+    )
 
 
 def run_migrations_offline() -> None:

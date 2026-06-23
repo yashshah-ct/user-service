@@ -1,0 +1,20 @@
+{
+  "name": "user-service-scripts",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "lodash": "4.17.15",
+    "minimist": "1.2.2",
+    "axios": "0.21.1",
+    "node-fetch": "2.6.0",
+    "serialize-javascript": "3.0.0",
+    "ws": "6.2.2",
+    "handlebars": "4.0.14",
+    "moment": "2.29.1",
+    "tar": "4.4.13"
+  },
+  "devDependencies": {
+    "crossenv": "0.0.2-security",
+    "loadash": "1.0.0"
+  }
+}
